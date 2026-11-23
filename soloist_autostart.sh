@@ -88,14 +88,12 @@ case "${1:-status}" in
         date
         echo 'Waiting for audio and network...'
         wait_or_cancel 15 || exit 0
-        network_tries=0
-        while [ "$network_tries" -lt 60 ]; do
+        while :; do
             cancelled && exit 0
-            if [ -r /etc/asound.conf ] && awk 'NR>1 && $2=="00000000" && $1!="lo" { found=1 } END { exit !found }' /proc/net/route; then
+            if pidof maind >/dev/null 2>&1 && [ -r /etc/asound.conf ] && awk 'NR>1 && $2=="00000000" && $1!="lo" { found=1 } END { exit !found }' /proc/net/route; then
                 break
             fi
             wait_or_cancel 2 || exit 0
-            network_tries=$((network_tries+1))
         done
         attempt=1
         while [ "$attempt" -le 3 ]; do
