@@ -2,7 +2,7 @@
 
 **Orion** — проект для использования Spotify на **Яндекс Станции 3**. Взаимодействие со Spotify осуществляется через API с использованием **Soloist**.
 
-> **Важно:** проект предоставляется «как есть». Голосовые команды не работают.
+> **Важно:** проект предоставляется «как есть». Музыку выбирают в приложении Spotify. Обычные ответы Алисы и системные звуки используют общий выход колонки.
 
 ## Как это работает
 
@@ -13,6 +13,30 @@ Yandex Station 3 Soloist
 ```
 
 Ищите это имя при выборе устройства для воспроизведения.
+
+## Обновить уже установленный Soloist
+
+Скачайте из этой версии проекта `soloist.sh` и `soloist_autostart.sh` в одну папку. Откройте в ней PowerShell. Укажите адрес своей Станции 3 и выполните команды по очереди. Если какая-либо команда завершится ошибкой, остановитесь.
+
+```powershell
+$station = "IP_КОЛОНКИ"
+Get-Content -Raw -Encoding UTF8 .\soloist.sh | ssh -p 2222 "root@$station" "umask 077; tr -d '\r' > /data/spotify-soloist/audio-update.sh && sh /data/spotify-soloist/audio-update.sh update"
+Get-Content -Raw -Encoding UTF8 .\soloist_autostart.sh | ssh -p 2222 "root@$station" "tr -d '\r' | sh"
+```
+
+Чтобы применить настройку к уже работающему Spotify, выполните:
+
+```powershell
+ssh -p 2222 "root@$station" "sh /data/spotify-soloist/autostart.sh restart"
+```
+
+Спросите «Алиса, который час?» до запуска музыки, во время тихого трека и после паузы. Для проверки именно автозапуска повторите после обычной перезагрузки колонки. Оставьте Spotify на паузе несколько секунд и посмотрите состояние выхода:
+
+```powershell
+ssh -p 2222 "root@$station" "sh /data/spotify-soloist/soloist.sh audio-status"
+```
+
+Когда у Soloist нет активного аудиопотока, строка `orion` должна перейти в `SUSPENDED`. Во время музыки ожидается `RUNNING`. Если звука Алисы всё ещё нет, остановите Spotify командой `sh /data/spotify-soloist/autostart.sh stop` в SSH и повторите вопрос.
 
 ## Подготовка
 
